@@ -10,23 +10,40 @@ using namespace std;
 namespace fs = filesystem;
 
 int n;
-bool stringValid(const string &textInput) {
-    for (char text : textInput) {
+bool stringValid(const string &textInput) 
+{
+    for (char text : textInput) 
+    {
         if (!isalpha(text) && text != ' ')
             return false;
     }
     return true;
 }
-bool numbersValid (const string &textInput) {
+bool majorValid(const string &textInput) 
+{
+    string majors[4] = {"Computer", "Industrial", "Electrical", "Mechanical"};
+    for (int i = 0; i < 4; i++) {
+        if (textInput == majors[i]) 
+        {
+            return true;
+            break;
+        }
+    }
+    return false;
+}
+bool numbersValid (const string &textInput) 
+{
     return !textInput.empty() && all_of(textInput.begin(), textInput.end(),::isdigit);
 }
-bool doubleValid(const string &textInput) {
+bool doubleValid(const string &textInput) 
+{
     istringstream iss(textInput);
     double number;
     char alphabet;
     return (iss >> number) && !(iss >> alphabet);
 }
-string marksMaker(const double mark) {
+string marksMaker(const double mark) 
+{
     string averageResult = to_string(mark);
     short decimal = averageResult.find('.');
     if (decimal != string::npos)
@@ -64,7 +81,7 @@ void studentPropertyReadline(string personProperty[4])
     cout << "Entr Student's Major (Computer, Industrial, Electrical, Mechanical): ";
     while (true) {
         getline(cin,person.major);
-        if (stringValid(person.major))
+        if (stringValid(person.major) && majorValid(person.major))
             break;
         else
             cout << "Invalid Student's Major. Please enter a valid major (from above majors with capital letter): ";
@@ -161,7 +178,7 @@ void sortStore(string students[][4], int count, fstream &Computer_list, fstream 
     // Store sorted students in respective files
     for (int i = 0; i < count; i++)
     {
-        string data = students[i][0] + " " + students[i][1] + " " + students[i][2] + " " + students[i][3];
+        string data = students[i][0] + " / " + students[i][1] + " / " + students[i][2] + " / " + students[i][3];
         switch (getMajorCode(students[i][2]))
         {
             case 0: writeToFile(Computer_list, "Computer_list.txt", data); break;
@@ -177,23 +194,23 @@ void reportCardMaker(string student[][4],string personMark[][3], int rsc)
     {
         case 0:
         {
-            fstream computer;
-            computer.open(student[rsc][1]+".txt", ios::app);
-            if (computer.is_open())
-            {
-                computer << left << "Name: " << setw(30) << student[rsc][0] << "ID: " << setw(20) << student[rsc][1] << "\n"
-                << "Major: " << setw(28) << student[rsc][2] << "Average: " << setw(18) << student[rsc][3] << "\n";
-                computer << "-------------------------------------------------" << endl;
-                for (int i = 0; i < n; i++)
-                    computer << left << "Subject: " << setw(13) << personMark[i][0] << "Unit: " << setw(10) << personMark[i][1] << "Mark: "<< setw(10) << personMark[i][2] << "\n";
-                computer.close();
-            }
-            fstream computerID;
-            computerID.open("ComputerID_list", ios::app);
-            if (computerID.is_open())
-                computerID << student[rsc][1] << '\n';
-            computerID.close();
-            break;
+                fstream computer;
+                computer.open(student[rsc][1]+".txt",ios::app);
+                if (computer.is_open())
+                {
+                    computer << left << "Name: " << setw(30) << student[rsc][0] << "ID: " << setw(20) << student[rsc][1] << "\n"
+                    << "Major: " << setw(28) << student[rsc][2] << "Average: " << setw(18) << student[rsc][3] << "\n";
+                    computer << "-------------------------------------------------" << endl;
+                    for (int i = 0; i < n; i++)
+                        computer << left << "Subject: " << setw(13) << personMark[i][0] << "Unit: " << setw(10) << personMark[i][1] << "Mark: "<< setw(10) << personMark[i][2] << "\n";
+                    computer.close();
+                }
+                fstream computerID;
+                computerID.open("ComputerID_list", ios::app);
+                if (computerID.is_open())
+                    computerID << student[rsc][1] << '\n';
+                computerID.close();
+                break;
         }
         case 1:
         {
@@ -308,9 +325,12 @@ int main()
                         }
                         else if (yes_no == 'n' || yes_no == 'N')
                         {
+                            string student_grades[0][3];
                             Registered_student_Count++;
                             students[Registered_student_Count][3] = "0"; // اگر نمره‌ای وارد نشد، معدل ۰
                             sortStore(students,Registered_student_Count,Computer_list,Industrial_list,Electrical_list,Mechanical_list);
+                            n = 0;
+                            reportCardMaker(students,student_grades,Registered_student_Count-1);
                             cout << "The student's properties with '0' average have been saved.\n" << endl;
                         }
                         else
@@ -324,7 +344,7 @@ int main()
                              << "Press '3' to filter by Industrial Engineering" << "\n"
                              << "Press '4' to filter by Electrical Engineering" << "\t"
                              << "Press '5' to filter by Mechanical Engineering" << "\n"
-                             << "press '6' to menu and main" << "\n";
+                             << "press '6' to back to menu and main" << "\n";
 
                              while (cin >> filter_input)
                              {
@@ -476,7 +496,8 @@ int main()
                                     }
                                     if (computerID.is_open()) {
                                         if (computerID.peek() == ifstream::traits_type::eof()) {
-                                            cout << "Not any Computer Student has been registered. Please enter '1' to register." << endl;
+                                            cout << "Not any Computer Student has been registered. Please enter '1' to register.";
+                                            cout << endl;
                                             break;
                                         }
                                         else {
@@ -521,10 +542,17 @@ int main()
                                         break;
                                     }
                                     if (industrialID.is_open()) {
-                                        string line;
-                                        while (getline(industrialID, line))
-                                            cout << line << "\n";
-                                        industrialID.close();
+                                        if (industrialID.peek() == ifstream::traits_type::eof()) {
+                                            cout << "Not any Computer Student has been registered. Please enter '1' to register.";
+                                            cout << endl;
+                                            break;
+                                        }
+                                        else {
+                                            string line;
+                                            while (getline(industrialID, line))
+                                                cout << line << "\n";
+                                            industrialID.close();
+                                        }
                                     }
                                     cout << "Enter the id of student: ";
                                     cin >> id;
@@ -561,10 +589,17 @@ int main()
                                         break;
                                     }
                                     if (electricalID.is_open()) {
-                                        string line;
-                                        while (getline(electricalID, line))
-                                            cout << line << "\n";
-                                        electricalID.close();
+                                        if (electricalID.peek() == ifstream::traits_type::eof()) {
+                                            cout << "Not any Computer Student has been registered. Please enter '1' to register.";
+                                            cout << endl;
+                                            break;
+                                        }
+                                        else {
+                                            string line;
+                                            while (getline(electricalID, line))
+                                                cout << line << "\n";
+                                            electricalID.close();
+                                        }
                                     }
                                     cout << "Enter the id of student: ";
                                     cin >> id;
@@ -601,10 +636,17 @@ int main()
                                         break;
                                     }
                                     if (mechanicalID.is_open()) {
-                                        string line;
-                                        while (getline(mechanicalID, line))
-                                            cout << line << "\n";
-                                        mechanicalID.close();
+                                        if (mechanicalID.peek() == ifstream::traits_type::eof()) {
+                                            cout << "Not any Computer Student has been registered. Please enter '1' to register.";
+                                            cout << endl;
+                                            break;
+                                        }
+                                        else {
+                                            string line;
+                                            while (getline(mechanicalID, line))
+                                                cout << line << "\n";
+                                            mechanicalID.close();
+                                        }
                                     }
                                     cout << "Enter the id of student: ";
                                     cin >> id;
