@@ -2,47 +2,45 @@
 #include <fstream>
 #include <string>
 #include <filesystem>
+#include <vector>
 #include <iomanip>
 using namespace std;
 namespace fs = filesystem;
 
 int n;
-string computerID[100];
-string industrialID[100];
-string electricalID[100];
-string mechanicalID[100];
+vector<string> computerID = {};
+vector<string> industrialID = {};
+vector<string> electricalID = {};
+vector<string> mechanicalID = {};
 
-struct studentProperty
+struct StudentProperty
 {
     string fullName;
     string id;
     string major;
 };
-
-struct studentMark
+struct StudentMark
 {
     string subject;
     string unit;
-    double mark;
+    double mark{};
 };
-
-void readline(string personProperty[4])
+void studentPropertyReadline(string personProperty[4])
 {
-    studentProperty person;
+    StudentProperty person;
     cout << "Enter Student's Name: ";
     cin >> person.fullName;
     cout << "Enter Student's ID: ";
     cin >> person.id;
-    cout << "Entr Student's Major: ";
+    cout << "Entr Student's Major (Computer, Industrial, Electrical, Mechanical): ";
     cin >> person.major;
     personProperty[0] = person.fullName;
     personProperty[1] = person.id;
     personProperty[2] = person.major;
 }
-
-void marks_input(string personMark[][3], string personProperty[4])
+void studentMarkReadline(string personMark[][3], string personProperty[4])
 {
-    studentMark person;
+    StudentMark person;
     double average = 0;
     cout << "Enter the subject number: ";
     while (cin >> n){
@@ -68,56 +66,47 @@ void marks_input(string personMark[][3], string personProperty[4])
         average += person.mark;
     }
     average /= n;
-    string avgStr = to_string(average);
-    size_t decimalPos = avgStr.find('.');
-    if (decimalPos != string::npos) {
-        avgStr = avgStr.substr(0, decimalPos + 3);
-    }
-    personProperty[3] = avgStr;
+    personProperty[3] = to_string(average);
+    cout << "The student's properties and marks have been saved.\n" << endl;
 }
-
 int getMajorCode(const string &major)
 {
     if (major == "Computer") return 0;
-    if (major == "Industrial") return 1;
-    if (major == "Electrical") return 2;
-    if (major == "Mechanical") return 3;
+    else if (major == "Industrial") return 1;
+    else if (major == "Electrical") return 2;
+    else if (major == "Mechanical") return 3;
+    else return -1;
 }
-
-void writeToFile(fstream &file, const string &filename, const string &data) 
+void writeToFile(fstream &file, const string &filename, const string &data)
 {
     file.open(filename, ios::app);
-    if (file.is_open()) 
+    if (file.is_open())
     {
         file << data << endl;
         file.close();
-    } 
-    else 
-    {
-        cerr << "Error opening " << filename << "!\n";
     }
+    else
+        cerr << "Error opening " << filename << "!\n";
 }
-
-void sort_store(string students[][4], int count, fstream &Computer_list, fstream &Industrial_list, fstream &Electrical_list, fstream &Mechanical_list) 
+void sortStore(string students[][4], int count, fstream &Computer_list, fstream &Industrial_list, fstream &Electrical_list, fstream &Mechanical_list)
 {
-    for (int i = 0; i < count - 1; i++) 
+    // Sorting logic remains the same
+    for (int i = 0; i < count - 1; i++)
     {
-        for (int j = 0; j < count - i - 1; j++) 
+        for (int j = 0; j < count - i - 1; j++)
         {
-            if (stod(students[j][3]) < stod(students[j + 1][3])) 
+            if (stod(students[j][3]) < stod(students[j + 1][3]))
             {
-                for (int k = 0; k < 4; k++) 
-                {
+                for (int k = 0; k < 4; k++)
                     swap(students[j][k], students[j + 1][k]);
-                }
             }
         }
     }
-
-    for (int i = 0; i < count; i++) 
+    // Store sorted students in respective files
+    for (int i = 0; i < count; i++)
     {
         string data = students[i][0] + " " + students[i][1] + " " + students[i][2] + " " + students[i][3];
-        switch (getMajorCode(students[i][2])) 
+        switch (getMajorCode(students[i][2]))
         {
             case 0: writeToFile(Computer_list, "Computer_list.txt", data); break;
             case 1: writeToFile(Industrial_list, "Industrial_list.txt", data); break;
@@ -126,65 +115,66 @@ void sort_store(string students[][4], int count, fstream &Computer_list, fstream
         }
     }
 }
-
-void reportCardMaker(string student[][4],string personMark[][3], int rsc, int &n)
+void reportCardMaker(string student[][4],string personMark[][3], int rsc)
 {
-    switch (getMajorCode(student[rsc-1][2]))
+    switch (getMajorCode(student[rsc][2]))
     {
         case 0:
         {
             fstream computer;
-            computer.open(student[rsc-1][1]+".txt", ios::app);
+            computer.open(student[rsc][1]+".txt", ios::app);
             if (computer.is_open())
             {
-                computer << student[rsc-1][0] << "\t" << student[rsc-1][1] << "\n" << student[rsc-1][2];
+                computer << student[rsc][0] << "\t" << student[rsc][1] << "\t" << student[rsc][2] << "\t" << student[rsc][3] << "\n";
                 for (int i = 0; i < n; i++)
-                    computer << personMark[i][0] << personMark[i][1] << personMark[i][2] << "\n";
+                    computer << personMark[i][0] << "\t" << personMark[i][1] << "\t" << personMark[i][2] << "\n";
                 computer.close();
             }
-            computerID[rsc-1] = student[rsc-1][1];
+            computerID.push_back(student[rsc][1]);
             break;
         }
         case 1:
         {
-            fstream industrial;
-            industrial.open(student[rsc-1][1]+".txt", ios::app);
-            if (industrial.is_open())
             {
-                industrial << student[rsc-1][0] << student[rsc-1][1] << student[rsc-1][2] << student[rsc-1][3] << "\n";
-                for (int i = 0; i < n; i++)
-                    industrial << personMark[i][0] << personMark[i][1] << personMark[i][2] << "\n";
-                industrial.close();
+                fstream industrial;
+                industrial.open(student[rsc][1]+".txt", ios::app);
+                if (industrial.is_open())
+                {
+                    industrial << student[rsc][0] << "\t" << student[rsc][1] << "\t" << student[rsc][2] << "\t" << student[rsc][3] << "\n";
+                    for (int i = 0; i < n; i++)
+                        industrial << personMark[i][0] << "\t" << personMark[i][1] << "\t" << personMark[i][2] << "\n";
+                    industrial.close();
+                }
+                industrialID.push_back(student[rsc][1]);
+                break;
             }
-            industrialID[rsc-1] = student[rsc-1][1];
-            break;
         }
         case 2:
         {
             fstream electrical;
-            electrical.open(student[rsc-1][1]+".txt", ios::app);
+            electrical.open(student[rsc][1]+".txt", ios::app);
             if (electrical.is_open())
             {
-                electrical << student[rsc-1][0] << student[rsc-1][1] << student[rsc-1][2] << student[rsc-1][3] << "\n";
+                electrical << student[rsc][0] << "\t" << student[rsc][1] << "\t" << student[rsc][2] << "\t" << student[rsc][3] << "\n";
                 for (int i = 0; i < n; i++)
-                    electrical << personMark[i][0] << personMark[i][1] << personMark[i][2] << "\n";
+                    electrical << personMark[i][0] << "\t" << personMark[i][1] << "\t" << personMark[i][2] << "\n";
                 electrical.close();
             }
-            electricalID[rsc-1] = student[rsc-1][1];
+            electricalID.push_back(student[rsc][1]);
             break;
         }
         case 3:
         {
             fstream mechanical;
-            mechanical.open(student[rsc-1][1]+".txt", ios::app);
+            mechanical.open(student[rsc][1]+".txt", ios::app);
             if (mechanical.is_open())
             {
-                mechanical << student[rsc-1][0] << student[rsc-1][1] << student[rsc-1][2] << student[rsc-1][3] << "\n";
+                mechanical << student[rsc][0] << "\t" << student[rsc][1] << "\t" << student[rsc][2] << "\t" << student[rsc][3] << "\n";
                 for (int i = 0; i < n; i++)
-                    mechanical << personMark[i][0] << personMark[i][1] << personMark[i][2] << "\n";
+                    mechanical << personMark[i][0] << "\t" << personMark[i][1] << "\t" << personMark[i][2] << "\n";
                 mechanical.close();
             }
-            mechanicalID[rsc-1] = student[rsc-1][1];
+            mechanicalID.push_back(student[rsc][1]);
             break;
         }
     }
@@ -192,7 +182,6 @@ void reportCardMaker(string student[][4],string personMark[][3], int rsc, int &n
 
 int main()
 {
-
     const int MAX_STUDENTS = 100;
     string students[MAX_STUDENTS][4]; // آرایه برای ذخیره موقت دانشجو ها به سبک هادی
     int Registered_student_Count = 0; // تعداد دانش‌آموزان ثبت‌ شده
@@ -222,7 +211,7 @@ int main()
                             break;
                         }
 
-                        readline(students[Registered_student_Count]);
+                        studentPropertyReadline(students[Registered_student_Count]);
 
                         cout << "Do you want to add his/her grades? (y/n): ";
                         char yes_no;
@@ -231,26 +220,22 @@ int main()
                         if (yes_no == 'y' || yes_no == 'Y')
                         {
                             string student_grades[10][3]; // فرض کردیم حداکثر ۱۰ درس وجود دارد
-                            marks_input(student_grades, students[Registered_student_Count]);
+                            studentMarkReadline(student_grades, students[Registered_student_Count]);
                             Registered_student_Count++;
-                            sort_store(students,Registered_student_Count,Computer_list,Industrial_list,Electrical_list,Mechanical_list);
-                            reportCardMaker(students,student_grades,Registered_student_Count,n);
+                            sortStore(students,Registered_student_Count,Computer_list,Industrial_list,Electrical_list,Mechanical_list);
+                            reportCardMaker(students, student_grades, Registered_student_Count-1);
                             n = 0;
                         }
                         else if (yes_no == 'n' || yes_no == 'N')
                         {
                             Registered_student_Count++;
                             students[Registered_student_Count][3] = "0"; // اگر نمره‌ای وارد نشد، معدل ۰
-                            sort_store(students,Registered_student_Count,Computer_list,Industrial_list,Electrical_list,Mechanical_list);
+                            sortStore(students,Registered_student_Count,Computer_list,Industrial_list,Electrical_list,Mechanical_list);
                         }
                         else
-                        {
                             cout << "Invalid input. Please enter 'y' or 'n'.\n";
-                        }
-                        
                         break;
                     }
-
             case 2: {
                         int filter_input;
                         cout << "Press '1' to show all " << "\n"
@@ -259,6 +244,7 @@ int main()
                              << "Press '4' to filter by Electrical Engineering" << "\t"
                              << "Press '5' to filter by Mechanical Engineering" << "\n"
                              << "press '6' to menu and main" << "\n";
+
                              while (cin >> filter_input)
                              {
                                 if (filter_input > 6 || filter_input < 1)
@@ -268,7 +254,6 @@ int main()
                              }
 
                              if (filter_input == 6) break;
-
                              switch (filter_input)
                              {
                                 case 1: {
@@ -278,9 +263,7 @@ int main()
                                                     {
                                                         string output_Computer;
                                                         while (getline (Computer_list, output_Computer))
-                                                        {
                                                             cout << output_Computer << "\n";
-                                                        }
                                                         Computer_list.close();
                                                     }
                                                 }
@@ -323,7 +306,6 @@ int main()
                                                 }
                                         break;
                                         }
-
                                 case 2: {
                                             Computer_list.open("Computer_list.txt", ios::in);
                                             {
@@ -331,15 +313,12 @@ int main()
                                                 {
                                                     string output_Computer;
                                                     while (getline(Computer_list, output_Computer))
-                                                    {
                                                         cout << output_Computer << "\n";
-                                                    }
                                                     Computer_list.close();
                                                 }
                                             }
                                         break;
                                         }
-
                                 case 3: {
                                             Industrial_list.open("Industrial_list.txt", ios::in);
                                             {
@@ -347,59 +326,51 @@ int main()
                                                 {
                                                     string output_Industrial;
                                                     while (getline(Industrial_list, output_Industrial))
-                                                    {
                                                         cout << output_Industrial << "\n";
-                                                    }
                                                     Industrial_list.close();
                                                 }
                                             }
                                         break;
                                         }
-
                                 case 4: {
                                             Electrical_list.open("Electrical_list.txt", ios::in);
                                             {   if(Electrical_list.is_open())
                                                 {
                                                     string output_Electrical;
                                                     while (getline(Electrical_list, output_Electrical))
-                                                    {
                                                         cout << output_Electrical << "\n";
-                                                    }
                                                     Electrical_list.close();
                                                 }
                                             }
                                         break;
                                         }
-
                                 case 5: {
                                             Mechanical_list.open("Mechanical_list.txt", ios::in);
                                             {   if(Mechanical_list.is_open())
                                                 {
                                                     string output_Mechanical;
                                                     while (getline(Mechanical_list, output_Mechanical))
-                                                    {
                                                         cout << output_Mechanical << "\n";
-                                                    }
                                                     Mechanical_list.close();
                                                 }
                                             }
                                         break;
                                         }
                             }
-
-
                     break;
                     }
-
             case 3: {
-                    int filter_input;
+                break;
+            }
+            case 4: {
+                int filter_input;
                     bool valid = false;
                     while (!valid)
                     {
-                        cout << "Press '1' to show Computer Engineering students" << "\n"
-                             << "Press '2' to filter by Industrial Engineering students" << "\n"
-                             << "Press '3' to filter by Electrical Engineering students" << "\n"
-                             << "Press '4' to filter by Mechanical Engineering students" << "\n";
+                        cout << "Press '1' to show Computer Engineering students" << "\t"
+                             << "Press '2' to show Industrial Engineering students" << "\n"
+                             << "Press '3' to show Electrical Engineering students" << "\t"
+                             << "Press '4' to show Mechanical Engineering students" << "\n";
                         cin >> filter_input;
                         switch (filter_input)
                         {
@@ -409,11 +380,12 @@ int main()
                                 while (true)
                                 {
                                     string id;
-                                    for (string i :computerID)
+                                    for (string i : computerID)
                                         cout << i << "\n";
-                                    cout << "Enter the id of student;";
+
+                                    cout << "Enter the id of student: ";
                                     cin >> id;
-                                    id +=".txt";
+                                    id += ".txt";
                                     if (fs::exists(id))
                                     {
                                         fstream idfile(id,ios::in);
@@ -437,9 +409,9 @@ int main()
                                 while (true)
                                 {
                                     string id;
-                                    for (string i :industrialID)
-                                        cout << i << "\n";
-                                    cout << "Enter the id of student;";
+                                    for (string i : industrialID)
+                                        cout << i;
+                                    cout << "Enter the id of student: ";
                                     cin >> id;
                                     id +=".txt";
                                     if (fs::exists(id))
@@ -465,9 +437,9 @@ int main()
                                 while (true)
                                 {
                                     string id;
-                                    for (string i :electricalID)
-                                        cout << i << "\n";
-                                    cout << "Enter the id of student;";
+                                    for (string i : electricalID)
+                                        cout << i;
+                                    cout << "Enter the id of student: ";
                                     cin >> id;
                                     id +=".txt";
                                     if (fs::exists(id))
@@ -493,9 +465,9 @@ int main()
                                 while (true)
                                 {
                                     string id;
-                                    for (string i :mechanicalID)
-                                        cout << i << "\n";
-                                    cout << "Enter the id of student;";
+                                    for (string i : mechanicalID)
+                                        cout << i;
+                                    cout << "Enter the id of student: ";
                                     cin >> id;
                                     id +=".txt";
                                     if (fs::exists(id))
@@ -520,19 +492,12 @@ int main()
                                 break;
                         }
                     }
-                break;
-            }
-
-            case 4: {
-
                     break;
                     }
-
             case 5: {
                         cout << "Exiting...\n";
                         return 0;
                     }
-
         }
     }
 }
