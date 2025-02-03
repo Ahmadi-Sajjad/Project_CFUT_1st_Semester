@@ -18,30 +18,29 @@ bool stringValid(const string &textInput)
             return false;
     }
     return true;
-}
+} // برسی می کند که ورودی آیا رشته است یا خیر
 bool majorValid(const string &textInput) 
 {
     string majors[4] = {"Computer", "Industrial", "Electrical", "Mechanical"};
     for (int i = 0; i < 4; i++) {
-        if (textInput == majors[i]) 
-        {
+        if (textInput == majors[i]) {
             return true;
             break;
         }
     }
     return false;
-}
+} // برسی می کند آیا رشته درست وارد شده یا خیر
 bool numbersValid (const string &textInput) 
 {
     return !textInput.empty() && all_of(textInput.begin(), textInput.end(),::isdigit);
-}
+} // برسی می کند آیا ورودی عدد است یا خیر
 bool doubleValid(const string &textInput) 
 {
     istringstream iss(textInput);
     double number;
     char alphabet;
     return (iss >> number) && !(iss >> alphabet);
-}
+} // برسی می کند آیا در بخش نمره عدد وارد شده یا خیر
 string marksMaker(const double mark) 
 {
     string averageResult = to_string(mark);
@@ -49,15 +48,15 @@ string marksMaker(const double mark)
     if (decimal != string::npos)
         averageResult = averageResult.substr(0, decimal + 3);
     return averageResult;
-}
+} // تعداد ارقام اعشار را ۲ تا قرار می دهد
 struct StudentProperty
 {
     string fullName; string id; string major;
-};
+}; // مشخصات اصلی دانشجو: نام‌، کد دانشجویی،‌ رشته
 struct StudentMark
 {
     string subject; string unit; double mark{};
-};
+}; // مشخصات درس، تعداد واحد، نمره درس دانشجو
 void studentPropertyReadline(string personProperty[4])
 {
     StudentProperty person;
@@ -87,7 +86,7 @@ void studentPropertyReadline(string personProperty[4])
             cout << "Invalid Student's Major. Please enter a valid major (from above majors with capital letter): ";
     }
     personProperty[0] = person.fullName; personProperty[1] = person.id; personProperty[2] = person.major;
-}
+} // ورودی مشخصات اصلی دانشجو: نام‌، کد دانشجویی،‌ رشته
 void studentMarkReadline(string personMark[][3], string personProperty[4])
 {
     StudentMark person;
@@ -141,7 +140,7 @@ void studentMarkReadline(string personMark[][3], string personProperty[4])
     average /= n;
     personProperty[3] = marksMaker(average);
     cout << "The student's properties and marks have been saved.\n" << endl;
-}
+} // ورودی مشخصات درس، تعداد واحد، نمره درس دانشجو
 int getMajorCode(const string &major)
 {
     if (major == "Computer") return 0;
@@ -149,7 +148,7 @@ int getMajorCode(const string &major)
     else if (major == "Electrical") return 2;
     else if (major == "Mechanical") return 3;
     else return -1;
-}
+} // برسی مقدار عددی رشته
 void writeToFile(fstream &file, const string &filename, const string &data)
 {
     file.open(filename, ios::app);
@@ -160,7 +159,7 @@ void writeToFile(fstream &file, const string &filename, const string &data)
     }
     else
         cout << "Error opening " << filename << "!\n";
-}
+} // مرتب‌ سازی لیست دانشجو ها
 void sortStore(string students[][4], int count, fstream &Computer_list, fstream &Industrial_list, fstream &Electrical_list, fstream &Mechanical_list)
 {
     // Sorting logic remains the same
@@ -187,7 +186,7 @@ void sortStore(string students[][4], int count, fstream &Computer_list, fstream 
             case 3: writeToFile(Mechanical_list, "Mechanical_list.txt", data); break;
         }
     }
-}
+} // ساخت لیست دانشجو ها
 void reportCardMaker(string student[][4],string personMark[][3], int rsc)
 {
     switch (getMajorCode(student[rsc][2]))
@@ -275,12 +274,26 @@ void reportCardMaker(string student[][4],string personMark[][3], int rsc)
             break;
         }
     }
-}
+} // ساخت کارنامه دانشجو
+void studentWithoutMarks(string students[][4],int rsc) {
+    fstream major;
+    major.open(students[rsc][1]+".txt", ios::app);
+    if (major.is_open()) {
+        major << "Name: " << students[rsc][0]<< " / " << "ID: " << students[rsc][1]<< " / "  << "Major: " << students[rsc][2] << " / " << "Average: " << students[rsc][3];
+        major.close();
+    }
+    fstream list;
+    list.open("students_without_marks", ios::app);
+    if (list.is_open()) {
+        list << students[rsc][1]<< '\n';
+        list.close();
+    }
+} // ساخت فایل برای دانشجویان بدون نمره
 
 int main()
 {
     const int MAX_STUDENTS = 100;
-    string students[MAX_STUDENTS][4]; // آرایه برای ذخیره موقت دانشجو ها به سبک هادی
+    string students[MAX_STUDENTS][4]; // آرایه برای ذخیره موقت دانشجو ها
     int Registered_student_Count = 0; // تعداد دانش‌آموزان ثبت‌ شده
     fstream Computer_list;
     fstream Industrial_list;
@@ -291,7 +304,7 @@ int main()
     {
         cout << "1. Add new student\n"
              << "2. Students list\n"
-             << "3. Student grades\n"
+             << "3. Student without marks report\n"
              << "4. Report card\n"
              << "5. Exit\n"
              << "Enter your choice: ";
@@ -325,12 +338,9 @@ int main()
                         }
                         else if (yes_no == 'n' || yes_no == 'N')
                         {
-                            string student_grades[0][3];
                             Registered_student_Count++;
                             students[Registered_student_Count][3] = "0"; // اگر نمره‌ای وارد نشد، معدل ۰
-                            sortStore(students,Registered_student_Count,Computer_list,Industrial_list,Electrical_list,Mechanical_list);
-                            n = 0;
-                            reportCardMaker(students,student_grades,Registered_student_Count-1);
+                            studentWithoutMarks(students, Registered_student_Count-1);
                             cout << "The student's properties with '0' average have been saved.\n" << endl;
                         }
                         else
@@ -465,13 +475,54 @@ int main()
                             }
                     break;
                     }
-            case 3: {
+            case 3:
+            {
+                while (true) {
+                    string id;
+                    fstream major;
+                    major.open("students_without_marks", ios::in);
+                    if (!major) {
+                        cout << "Not any Computer Student has been registered. Please enter '1' to register.";
+                        cout << endl;
+                        break;
+                    }
+                    if (major.is_open()) {
+                        if (major.peek() == ifstream::traits_type::eof()) {
+                            cout << "Not any Computer Student has been registered. Please enter '1' to register.";
+                            cout << endl;
+                            break;
+                        }
+                        else {
+                            string line;
+                            while (getline(major, line))
+                                cout << line << "\n";
+                            major.close();
+                        }
+                    }
+                    cout << "Enter the id of student: ";
+                    cin >> id;
+                    id += ".txt";
+                    if (fs::exists(id))
+                    {
+                        fstream idfile(id,ios::in);
+                        if (idfile.is_open())
+                        {
+                            string line;
+                            while (getline(idfile,line))
+                                cout << line << "\n";
+                            idfile.close();
+                        }
+                        cout << "\n";
+                        break;
+                    }
+                }
                 break;
             }
-            case 4: {
+            case 4:
+            {
                 int filter_input;
-                    bool valid = false;
-                    while (!valid)
+                bool valid = false;
+                while (!valid)
                     {
                         cout << "Press '1' to show Computer Engineering students   "
                         << "Press '2' to show Industrial Engineering students\n"
@@ -530,49 +581,6 @@ int main()
                             }
                             case 2:
                             {
-                                valid = true;
-                                while (true)
-                                {
-                                    string id;
-                                    fstream industrialID;
-                                    industrialID.open("IndustrialID_list", ios::in);
-                                    if (!industrialID) {
-                                        cout << "Not any Computer Student has been registered. Please enter '1' to register.";
-                                        cout << endl;
-                                        break;
-                                    }
-                                    if (industrialID.is_open()) {
-                                        if (industrialID.peek() == ifstream::traits_type::eof()) {
-                                            cout << "Not any Computer Student has been registered. Please enter '1' to register.";
-                                            cout << endl;
-                                            break;
-                                        }
-                                        else {
-                                            string line;
-                                            while (getline(industrialID, line))
-                                                cout << line << "\n";
-                                            industrialID.close();
-                                        }
-                                    }
-                                    cout << "Enter the id of student: ";
-                                    cin >> id;
-                                    id +=".txt";
-                                    if (fs::exists(id))
-                                    {
-                                        fstream idfile(id,ios::in);
-                                        if (idfile.is_open())
-                                        {
-                                            string line;
-                                            while (getline(idfile,line))
-                                            cout << line << "\n";
-                                            idfile.close();
-                                        }
-                                        cout << "\n";
-                                        break;
-                                    }
-                                    else
-                                        cout << "id not found. Please choose one of the top numbers: ";
-                                }
                                 break;
                             }
                             case 3:
@@ -674,8 +682,8 @@ int main()
                                 break;
                         }
                     }
-                    break;
-                    }
+                break;
+            }
             case 5: {
                         cout << "Exiting...\n";
                         return 0;
