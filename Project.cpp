@@ -5,6 +5,7 @@
 #include <cctype>
 #include <sstream>
 #include <algorithm>
+#include <iomanip>
 using namespace std;
 namespace fs = filesystem;
 
@@ -32,7 +33,6 @@ string marksMaker(const double mark) {
         averageResult = averageResult.substr(0, decimal + 3);
     return averageResult;
 }
-
 struct StudentProperty
 {
     string fullName; string id; string major;
@@ -41,7 +41,6 @@ struct StudentMark
 {
     string subject; string unit; double mark{};
 };
-
 void studentPropertyReadline(string personProperty[4])
 {
     StudentProperty person;
@@ -91,7 +90,8 @@ void studentMarkReadline(string personMark[][3], string personProperty[4])
     {
         cout << "number " << i + 1 << ": " << '\n';
         cout << "Enter the subject: ";
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        if (i == 0)
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
         while (true) {
             getline(cin,person.subject);
             if (stringValid(person.subject))
@@ -181,9 +181,11 @@ void reportCardMaker(string student[][4],string personMark[][3], int rsc)
             computer.open(student[rsc][1]+".txt", ios::app);
             if (computer.is_open())
             {
-                computer << "Name: " << student[rsc][0] << "\t" << "ID: " << student[rsc][1] << "\n" << "Major: " << student[rsc][2] << "\t"  << "Average: " << student[rsc][3] << "\n";
+                computer << left << "Name: " << setw(30) << student[rsc][0] << "ID: " << setw(20) << student[rsc][1] << "\n"
+                << "Major: " << setw(28) << student[rsc][2] << "Average: " << setw(18) << student[rsc][3] << "\n";
+                computer << "-------------------------------------------------" << endl;
                 for (int i = 0; i < n; i++)
-                    computer << "Subject: " << personMark[i][0] << "\t" << "Unit: " << personMark[i][1] << "\t" << "Mark: "<< personMark[i][2] << "\n";
+                    computer << left << "Subject: " << setw(13) << personMark[i][0] << "Unit: " << setw(10) << personMark[i][1] << "Mark: "<< setw(10) << personMark[i][2] << "\n";
                 computer.close();
             }
             fstream computerID;
@@ -200,9 +202,11 @@ void reportCardMaker(string student[][4],string personMark[][3], int rsc)
                 industrial.open(student[rsc][1]+".txt", ios::app);
                 if (industrial.is_open())
                 {
-                    industrial << "Name: " << student[rsc][0] << "\t" << "ID: " << student[rsc][1] << "\n" << "Major: " << student[rsc][2] << "\t"  << "Average: " << student[rsc][3] << "\n";
+                    industrial << left << "Name: " << setw(30) << student[rsc][0] << "ID: " << setw(20) << student[rsc][1] << "\n"
+                    << "Major: " << setw(28) << student[rsc][2] << "Average: " << setw(18) << student[rsc][3] << "\n";
+                    industrial << "-------------------------------------------------" << endl;
                     for (int i = 0; i < n; i++)
-                        industrial << "Subject: " << personMark[i][0] << "\t" << "Unit: " << personMark[i][1] << "\t" << "Mark"<< personMark[i][2] << "\n";
+                        industrial << left << "Subject: " << setw(13) << personMark[i][0] << "Unit: " << setw(10) << personMark[i][1] << "Mark: "<< setw(10) << personMark[i][2] << "\n";
                     industrial.close();
                 }
                 fstream industrialID;
@@ -219,9 +223,11 @@ void reportCardMaker(string student[][4],string personMark[][3], int rsc)
             electrical.open(student[rsc][1]+".txt", ios::app);
             if (electrical.is_open())
             {
-                electrical << "Name: " << student[rsc][0] << "\t" << "ID: " << student[rsc][1] << "\n" << "Major: " << student[rsc][2] << "\t"  << "Average: " << student[rsc][3] << "\n";
+                electrical << left << "Name: " << setw(30) << student[rsc][0] << "ID: " << setw(20) << student[rsc][1] << "\n"
+                << "Major: " << setw(28) << student[rsc][2] << "Average: " << setw(18) << student[rsc][3] << "\n";
+                electrical << "-------------------------------------------------" << endl;
                 for (int i = 0; i < n; i++)
-                    electrical << "Subject: " << personMark[i][0] << "\t" << "Unit: " << personMark[i][1] << "\t" << "Mark"<< personMark[i][2] << "\n";
+                    electrical << left << "Subject: " << setw(13) << personMark[i][0] << "Unit: " << setw(10) << personMark[i][1] << "Mark: "<< setw(10) << personMark[i][2] << "\n";
                 electrical.close();
             }
             fstream electricalID;
@@ -237,9 +243,11 @@ void reportCardMaker(string student[][4],string personMark[][3], int rsc)
             mechanical.open(student[rsc][1]+".txt", ios::app);
             if (mechanical.is_open())
             {
-                mechanical << "Name: " << student[rsc][0] << "\t" << "ID: " << student[rsc][1] << "\n" << "Major: " << student[rsc][2] << "\t"  << "Average: " << student[rsc][3] << "\n";
+                mechanical << left << "Name: " << setw(30) << student[rsc][0] << "ID: " << setw(20) << student[rsc][1] << "\n"
+                << "Major: " << setw(28) << student[rsc][2] << "Average: " << setw(18) << student[rsc][3] << "\n";
+                mechanical << "-------------------------------------------------" << endl;
                 for (int i = 0; i < n; i++)
-                    mechanical << "Subject: " << personMark[i][0] << "\t" << "Unit: " << personMark[i][1] << "\t" << "Mark"<< personMark[i][2] << "\n";
+                    mechanical << left << "Subject: " << setw(13) << personMark[i][0] << "Unit: " << setw(10) << personMark[i][1] << "Mark: "<< setw(10) << personMark[i][2] << "\n";
                 mechanical.close();
             }
             fstream mechanicalID;
@@ -321,7 +329,7 @@ int main()
                              while (cin >> filter_input)
                              {
                                 if (filter_input > 6 || filter_input < 1)
-                                    cout << "invalid input, Please enter a number betwen '1' to '6'." << "\n" << "Enter your choice: ";
+                                    cout << "invalid input, Please enter a number between '1' to '6'." << "\n" << "Enter your choice: ";
                                 else
                                     break;
                              }
@@ -445,7 +453,7 @@ int main()
                     bool valid = false;
                     while (!valid)
                     {
-                        cout << "Press '1' to show Computer Engineering students\t"
+                        cout << "Press '1' to show Computer Engineering students   "
                         << "Press '2' to show Industrial Engineering students\n"
                         << "Press '3' to show Electrical Engineering students\t"
                         << "Press '4' to show Mechanical Engineering students\n";
@@ -461,13 +469,23 @@ int main()
                                     string id;
                                     fstream computerID;
                                     computerID.open("ComputerID_list", ios::in);
-                                    if (computerID.is_open()) {
-                                        string line;
-                                        while (getline(computerID, line))
-                                            cout << line << "\n";
-                                        computerID.close();
+                                    if (!computerID) {
+                                        cout << "Not any Computer Student has been registered. Please enter '1' to register.";
+                                        cout << endl;
+                                        break;
                                     }
-
+                                    if (computerID.is_open()) {
+                                        if (computerID.peek() == ifstream::traits_type::eof()) {
+                                            cout << "Not any Computer Student has been registered. Please enter '1' to register." << endl;
+                                            break;
+                                        }
+                                        else {
+                                            string line;
+                                            while (getline(computerID, line))
+                                                cout << line << "\n";
+                                            computerID.close();
+                                        }
+                                    }
                                     cout << "Enter the id of student: ";
                                     cin >> id;
                                     id += ".txt";
@@ -497,6 +515,11 @@ int main()
                                     string id;
                                     fstream industrialID;
                                     industrialID.open("IndustrialID_list", ios::in);
+                                    if (!industrialID) {
+                                        cout << "Not any Computer Student has been registered. Please enter '1' to register.";
+                                        cout << endl;
+                                        break;
+                                    }
                                     if (industrialID.is_open()) {
                                         string line;
                                         while (getline(industrialID, line))
@@ -532,6 +555,11 @@ int main()
                                     string id;
                                     fstream electricalID;
                                     electricalID.open("ElectricalID_list", ios::in);
+                                    if (!electricalID) {
+                                        cout << "Not any Computer Student has been registered. Please enter '1' to register.";
+                                        cout << endl;
+                                        break;
+                                    }
                                     if (electricalID.is_open()) {
                                         string line;
                                         while (getline(electricalID, line))
@@ -567,6 +595,11 @@ int main()
                                     string id;
                                     fstream mechanicalID;
                                     mechanicalID.open("MechanicalID_list", ios::in);
+                                    if (!mechanicalID) {
+                                        cout << "Not any Computer Student has been registered. Please enter '1' to register.";
+                                        cout << endl;
+                                        break;
+                                    }
                                     if (mechanicalID.is_open()) {
                                         string line;
                                         while (getline(mechanicalID, line))
