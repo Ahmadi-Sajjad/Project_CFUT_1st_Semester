@@ -2,71 +2,127 @@
 #include <fstream>
 #include <string>
 #include <filesystem>
-#include <vector>
-#include <iomanip>
+#include <cctype>
+#include <sstream>
+#include <algorithm>
 using namespace std;
 namespace fs = filesystem;
 
 int n;
-vector<string> computerID = {};
-vector<string> industrialID = {};
-vector<string> electricalID = {};
-vector<string> mechanicalID = {};
+bool stringValid(const string &textInput) {
+    for (char text : textInput) {
+        if (!isalpha(text) && text != ' ')
+            return false;
+    }
+    return true;
+}
+bool numbersValid (const string &textInput) {
+    return !textInput.empty() && all_of(textInput.begin(), textInput.end(),::isdigit);
+}
+bool doubleValid(const string &textInput) {
+    istringstream iss(textInput);
+    double number;
+    char alphabet;
+    return (iss >> number) && !(iss >> alphabet);
+}
+string marksMaker(const double mark) {
+    string averageResult = to_string(mark);
+    short decimal = averageResult.find('.');
+    if (decimal != string::npos)
+        averageResult = averageResult.substr(0, decimal + 3);
+    return averageResult;
+}
 
 struct StudentProperty
 {
-    string fullName;
-    string id;
-    string major;
+    string fullName; string id; string major;
 };
 struct StudentMark
 {
-    string subject;
-    string unit;
-    double mark{};
+    string subject; string unit; double mark{};
 };
+
 void studentPropertyReadline(string personProperty[4])
 {
     StudentProperty person;
     cout << "Enter Student's Name: ";
-    cin >> person.fullName;
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    while (true) {
+        getline(cin,person.fullName);
+        if (stringValid(person.fullName))
+            break;
+        else
+            cout << "Invalid Student's Name. Please enter a valid name (only characters): ";
+    }
     cout << "Enter Student's ID: ";
-    cin >> person.id;
+    while (true) {
+        getline(cin,person.id);
+        if (numbersValid(person.id))
+            break;
+        else
+            cout << "Invalid Student's ID. Please enter a valid ID (only numbers): ";
+    }
     cout << "Entr Student's Major (Computer, Industrial, Electrical, Mechanical): ";
-    cin >> person.major;
-    personProperty[0] = person.fullName;
-    personProperty[1] = person.id;
-    personProperty[2] = person.major;
+    while (true) {
+        getline(cin,person.major);
+        if (stringValid(person.major))
+            break;
+        else
+            cout << "Invalid Student's Major. Please enter a valid major (from above majors with capital letter): ";
+    }
+    personProperty[0] = person.fullName; personProperty[1] = person.id; personProperty[2] = person.major;
 }
 void studentMarkReadline(string personMark[][3], string personProperty[4])
 {
     StudentMark person;
     double average = 0;
-    cout << "Enter the subject number: ";
-    while (cin >> n){
-        if (n > 10 && n < 1)
-        {
-            cerr << "Invalid number, Please Enter a valid number between '1' to '10'.";
-            continue;
+    cout << "Enter the subject numbers: ";
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    while (true) {
+        cin >> n;
+        if (numbersValid(to_string(n))) {
+            if (n <= 10 && n >= 1)
+                break;
+            else
+                cout << "Invalid number. Please enter a number between '1' and '10' ";
         }
-        else
-            break;
     }
     for (int i = 0; i < n; i++)
     {
+        cout << "number " << i + 1 << ": " << '\n';
         cout << "Enter the subject: ";
-        cin >> person.subject;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        while (true) {
+            getline(cin,person.subject);
+            if (stringValid(person.subject))
+                break;
+            else
+                cout << "Invalid Subject's Name. Please enter a valid name (only characters): ";
+        }
         cout << "Enter the unit: ";
-        cin >> person.unit;
+        while (true) {
+            getline(cin,person.unit);
+            if (numbersValid(person.unit))
+                break;
+            else
+                cout << "Invalid Subject's unit. Please enter a valid unit (only numbers): ";
+        }
         cout << "Enter the mark: ";
-        cin >> person.mark;
-        personMark[i][0] = person.subject;
-        personMark[i][1] = person.unit;
-        personMark[i][2] = to_string(person.mark);
+        string alterMark;
+        while (true) {
+            getline(cin,alterMark);
+            if (doubleValid(alterMark)) {
+                person.mark = stod(alterMark);
+                break;
+            }
+            else
+                cout << "Invalid Subject's mark. Please enter a valid mark (integer or double number): ";
+        }
+        personMark[i][0] = person.subject; personMark[i][1] = person.unit; personMark[i][2] = marksMaker(person.mark);
         average += person.mark;
     }
     average /= n;
-    personProperty[3] = to_string(average);
+    personProperty[3] = marksMaker(average);
     cout << "The student's properties and marks have been saved.\n" << endl;
 }
 int getMajorCode(const string &major)
@@ -86,7 +142,7 @@ void writeToFile(fstream &file, const string &filename, const string &data)
         file.close();
     }
     else
-        cerr << "Error opening " << filename << "!\n";
+        cout << "Error opening " << filename << "!\n";
 }
 void sortStore(string students[][4], int count, fstream &Computer_list, fstream &Industrial_list, fstream &Electrical_list, fstream &Mechanical_list)
 {
@@ -125,12 +181,16 @@ void reportCardMaker(string student[][4],string personMark[][3], int rsc)
             computer.open(student[rsc][1]+".txt", ios::app);
             if (computer.is_open())
             {
-                computer << student[rsc][0] << "\t" << student[rsc][1] << "\t" << student[rsc][2] << "\t" << student[rsc][3] << "\n";
+                computer << "Name: " << student[rsc][0] << "\t" << "ID: " << student[rsc][1] << "\n" << "Major: " << student[rsc][2] << "\t"  << "Average: " << student[rsc][3] << "\n";
                 for (int i = 0; i < n; i++)
-                    computer << personMark[i][0] << "\t" << personMark[i][1] << "\t" << personMark[i][2] << "\n";
+                    computer << "Subject: " << personMark[i][0] << "\t" << "Unit: " << personMark[i][1] << "\t" << "Mark: "<< personMark[i][2] << "\n";
                 computer.close();
             }
-            computerID.push_back(student[rsc][1]);
+            fstream computerID;
+            computerID.open("ComputerID_list", ios::app);
+            if (computerID.is_open())
+                computerID << student[rsc][1] << '\n';
+            computerID.close();
             break;
         }
         case 1:
@@ -140,12 +200,16 @@ void reportCardMaker(string student[][4],string personMark[][3], int rsc)
                 industrial.open(student[rsc][1]+".txt", ios::app);
                 if (industrial.is_open())
                 {
-                    industrial << student[rsc][0] << "\t" << student[rsc][1] << "\t" << student[rsc][2] << "\t" << student[rsc][3] << "\n";
+                    industrial << "Name: " << student[rsc][0] << "\t" << "ID: " << student[rsc][1] << "\n" << "Major: " << student[rsc][2] << "\t"  << "Average: " << student[rsc][3] << "\n";
                     for (int i = 0; i < n; i++)
-                        industrial << personMark[i][0] << "\t" << personMark[i][1] << "\t" << personMark[i][2] << "\n";
+                        industrial << "Subject: " << personMark[i][0] << "\t" << "Unit: " << personMark[i][1] << "\t" << "Mark"<< personMark[i][2] << "\n";
                     industrial.close();
                 }
-                industrialID.push_back(student[rsc][1]);
+                fstream industrialID;
+                industrialID.open("IndustrialID_list", ios::app);
+                if (industrialID.is_open())
+                    industrialID << student[rsc][1] << '\n';
+                industrialID.close();
                 break;
             }
         }
@@ -155,12 +219,16 @@ void reportCardMaker(string student[][4],string personMark[][3], int rsc)
             electrical.open(student[rsc][1]+".txt", ios::app);
             if (electrical.is_open())
             {
-                electrical << student[rsc][0] << "\t" << student[rsc][1] << "\t" << student[rsc][2] << "\t" << student[rsc][3] << "\n";
+                electrical << "Name: " << student[rsc][0] << "\t" << "ID: " << student[rsc][1] << "\n" << "Major: " << student[rsc][2] << "\t"  << "Average: " << student[rsc][3] << "\n";
                 for (int i = 0; i < n; i++)
-                    electrical << personMark[i][0] << "\t" << personMark[i][1] << "\t" << personMark[i][2] << "\n";
+                    electrical << "Subject: " << personMark[i][0] << "\t" << "Unit: " << personMark[i][1] << "\t" << "Mark"<< personMark[i][2] << "\n";
                 electrical.close();
             }
-            electricalID.push_back(student[rsc][1]);
+            fstream electricalID;
+            electricalID.open("ElectricalID_list", ios::app);
+            if (electricalID.is_open())
+                electricalID << student[rsc][1] << '\n';
+            electricalID.close();
             break;
         }
         case 3:
@@ -169,12 +237,16 @@ void reportCardMaker(string student[][4],string personMark[][3], int rsc)
             mechanical.open(student[rsc][1]+".txt", ios::app);
             if (mechanical.is_open())
             {
-                mechanical << student[rsc][0] << "\t" << student[rsc][1] << "\t" << student[rsc][2] << "\t" << student[rsc][3] << "\n";
+                mechanical << "Name: " << student[rsc][0] << "\t" << "ID: " << student[rsc][1] << "\n" << "Major: " << student[rsc][2] << "\t"  << "Average: " << student[rsc][3] << "\n";
                 for (int i = 0; i < n; i++)
-                    mechanical << personMark[i][0] << "\t" << personMark[i][1] << "\t" << personMark[i][2] << "\n";
+                    mechanical << "Subject: " << personMark[i][0] << "\t" << "Unit: " << personMark[i][1] << "\t" << "Mark"<< personMark[i][2] << "\n";
                 mechanical.close();
             }
-            mechanicalID.push_back(student[rsc][1]);
+            fstream mechanicalID;
+            mechanicalID.open("MechanicalID_list", ios::app);
+            if (mechanicalID.is_open())
+                mechanicalID << student[rsc][1] << '\n';
+            mechanicalID.close();
             break;
         }
     }
@@ -231,6 +303,7 @@ int main()
                             Registered_student_Count++;
                             students[Registered_student_Count][3] = "0"; // اگر نمره‌ای وارد نشد، معدل ۰
                             sortStore(students,Registered_student_Count,Computer_list,Industrial_list,Electrical_list,Mechanical_list);
+                            cout << "The student's properties with '0' average have been saved.\n" << endl;
                         }
                         else
                             cout << "Invalid input. Please enter 'y' or 'n'.\n";
@@ -304,6 +377,7 @@ int main()
                                                         Mechanical_list.close();
                                                     }
                                                 }
+                                    cout << '\n';
                                         break;
                                         }
                                 case 2: {
@@ -317,6 +391,7 @@ int main()
                                                     Computer_list.close();
                                                 }
                                             }
+                                    cout << '\n';
                                         break;
                                         }
                                 case 3: {
@@ -330,6 +405,7 @@ int main()
                                                     Industrial_list.close();
                                                 }
                                             }
+                                    cout << '\n';
                                         break;
                                         }
                                 case 4: {
@@ -342,6 +418,7 @@ int main()
                                                     Electrical_list.close();
                                                 }
                                             }
+                                    cout << '\n';
                                         break;
                                         }
                                 case 5: {
@@ -354,6 +431,7 @@ int main()
                                                     Mechanical_list.close();
                                                 }
                                             }
+                                    cout << '\n';
                                         break;
                                         }
                             }
@@ -367,10 +445,11 @@ int main()
                     bool valid = false;
                     while (!valid)
                     {
-                        cout << "Press '1' to show Computer Engineering students" << "\t"
-                             << "Press '2' to show Industrial Engineering students" << "\n"
-                             << "Press '3' to show Electrical Engineering students" << "\t"
-                             << "Press '4' to show Mechanical Engineering students" << "\n";
+                        cout << "Press '1' to show Computer Engineering students\t"
+                        << "Press '2' to show Industrial Engineering students\n"
+                        << "Press '3' to show Electrical Engineering students\t"
+                        << "Press '4' to show Mechanical Engineering students\n";
+                        cout << "Please enter your choice: ";
                         cin >> filter_input;
                         switch (filter_input)
                         {
@@ -380,8 +459,14 @@ int main()
                                 while (true)
                                 {
                                     string id;
-                                    for (string i : computerID)
-                                        cout << i << "\n";
+                                    fstream computerID;
+                                    computerID.open("ComputerID_list", ios::in);
+                                    if (computerID.is_open()) {
+                                        string line;
+                                        while (getline(computerID, line))
+                                            cout << line << "\n";
+                                        computerID.close();
+                                    }
 
                                     cout << "Enter the id of student: ";
                                     cin >> id;
@@ -396,10 +481,11 @@ int main()
                                                 cout << line << "\n";
                                             idfile.close();
                                         }
+                                        cout << "\n";
                                         break;
                                     }
                                     else
-                                        cerr << "id not found";
+                                        cout << "id not found. Please choose one of the top numbers: ";
                                 }
                                 break;
                             }
@@ -409,8 +495,14 @@ int main()
                                 while (true)
                                 {
                                     string id;
-                                    for (string i : industrialID)
-                                        cout << i;
+                                    fstream industrialID;
+                                    industrialID.open("IndustrialID_list", ios::in);
+                                    if (industrialID.is_open()) {
+                                        string line;
+                                        while (getline(industrialID, line))
+                                            cout << line << "\n";
+                                        industrialID.close();
+                                    }
                                     cout << "Enter the id of student: ";
                                     cin >> id;
                                     id +=".txt";
@@ -424,10 +516,11 @@ int main()
                                             cout << line << "\n";
                                             idfile.close();
                                         }
+                                        cout << "\n";
                                         break;
                                     }
                                     else
-                                        cerr << "id not found";
+                                        cout << "id not found. Please choose one of the top numbers: ";
                                 }
                                 break;
                             }
@@ -437,8 +530,14 @@ int main()
                                 while (true)
                                 {
                                     string id;
-                                    for (string i : electricalID)
-                                        cout << i;
+                                    fstream electricalID;
+                                    electricalID.open("ElectricalID_list", ios::in);
+                                    if (electricalID.is_open()) {
+                                        string line;
+                                        while (getline(electricalID, line))
+                                            cout << line << "\n";
+                                        electricalID.close();
+                                    }
                                     cout << "Enter the id of student: ";
                                     cin >> id;
                                     id +=".txt";
@@ -455,8 +554,9 @@ int main()
                                         break;
                                     }
                                     else
-                                        cerr << "id not found";
+                                        cout << "id not found. Please choose one of the top numbers: ";
                                 }
+                                cout << "\n";
                                 break;
                             }
                             case 4:
@@ -465,8 +565,14 @@ int main()
                                 while (true)
                                 {
                                     string id;
-                                    for (string i : mechanicalID)
-                                        cout << i;
+                                    fstream mechanicalID;
+                                    mechanicalID.open("MechanicalID_list", ios::in);
+                                    if (mechanicalID.is_open()) {
+                                        string line;
+                                        while (getline(mechanicalID, line))
+                                            cout << line << "\n";
+                                        mechanicalID.close();
+                                    }
                                     cout << "Enter the id of student: ";
                                     cin >> id;
                                     id +=".txt";
@@ -483,8 +589,9 @@ int main()
                                         break;
                                     }
                                     else
-                                        cerr << "id not found";
+                                        cout << "id not found. Please choose one of the top numbers: ";
                                 }
+                                cout << "\n";
                                 break;
                             }
                             default:
@@ -498,6 +605,8 @@ int main()
                         cout << "Exiting...\n";
                         return 0;
                     }
+            default:
+                cout << "Invalid input. Please enter a number between '1' to '5'.\n";
         }
     }
 }
