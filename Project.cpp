@@ -527,8 +527,11 @@ int main()
                                         cout << "press c to continue\n";
                                         cin >> c;
                                         if (c == 'c')
-                                            break;
+                                            {
+                                                break;
+                                            }
                                     }
+                                    break;
                                 }
                                 case 2:
                                 {
@@ -581,8 +584,11 @@ int main()
                                         cout << "press c to continue\n";
                                         cin >> c;
                                         if (c == 'c')
-                                            break;
+                                        {
+                                        break;
+                                        }
                                     }
+                                break;
                                 }
                                 case 3:
                                 {
@@ -635,8 +641,11 @@ int main()
                                         cout << "press c to continue\n";
                                         cin >> c;
                                         if (c == 'c')
+                                        {
                                             break;
+                                        } 
                                     }
+                                break;
                                 }
                                 case 4:
                                 {
@@ -691,6 +700,7 @@ int main()
                                         if (c == 'c')
                                             break;
                                     }
+                                break;
                                 }
                                 default:
                                     cout << "Invalid input. Please enter a number between 1 and 4.\n";
